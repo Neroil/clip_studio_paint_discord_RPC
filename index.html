@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clip Studio Presence</title>
+  </head>
+  <body>
+    <main id="app">
+      <section class="status-band">
+        <div>
+          <p class="eyebrow">Discord Rich Presence</p>
+          <h1>Clip Studio Presence</h1>
+        </div>
+        <div id="connection-pill" class="pill muted">Starting</div>
+      </section>
+
+      <section class="layout">
+        <form id="settings-form" class="panel">
+          <div class="section-heading">
+            <h2>Settings</h2>
+            <button type="submit">Save</button>
+          </div>
+
+          <label>
+            Discord application ID
+            <input
+              id="client-id"
+              name="clientId"
+              autocomplete="off"
+              inputmode="numeric"
+              placeholder="123456789012345678"
+            />
+          </label>
+
+          <label>
+            Large image asset key
+            <input
+              id="large-image-key"
+              name="largeImageKey"
+              autocomplete="off"
+              placeholder="clip_studio_paint"
+            />
+          </label>
+
+          <div class="switch-row">
+            <span>Show document name</span>
+            <input id="show-document-name" type="checkbox" />
+          </div>
+
+          <div class="switch-row">
+            <span>Show elapsed drawing time</span>
+            <input id="show-elapsed-time" type="checkbox" />
+          </div>
+
+          <div class="switch-row">
+            <span>Only show while Clip Studio is focused</span>
+            <input id="only-when-focused" type="checkbox" />
+          </div>
+        </form>
+
+        <section class="panel">
+          <div class="section-heading">
+            <h2>Live Status</h2>
+            <button id="refresh-button" type="button">Refresh</button>
+          </div>
+
+          <dl class="status-list">
+            <div>
+              <dt>Clip Studio Paint</dt>
+              <dd id="csp-running">Checking</dd>
+            </div>
+            <div>
+              <dt>Focused</dt>
+              <dd id="csp-focused">Checking</dd>
+            </div>
+            <div>
+              <dt>Window title</dt>
+              <dd id="document-title">Hidden or unavailable</dd>
+            </div>
+            <div>
+              <dt>Discord</dt>
+              <dd id="discord-state">Waiting</dd>
+            </div>
+          </dl>
+
+          <p id="status-message" class="note"></p>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+

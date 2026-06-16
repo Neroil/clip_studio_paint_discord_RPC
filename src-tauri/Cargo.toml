@@ -1,0 +1,25 @@
+[package]
+name = "clip-studio-presence"
+version = "0.1.0"
+description = "Discord Rich Presence companion for Clip Studio Paint"
+authors = ["Hiroyko"]
+edition = "2021"
+
+[lib]
+name = "clip_studio_presence_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+discord-rich-presence = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+thiserror = "1"
+windows-sys = { version = "0.59", features = [
+  "Win32_Foundation",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_UI_WindowsAndMessaging"
+] }
