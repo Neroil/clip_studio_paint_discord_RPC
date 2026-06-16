@@ -3,10 +3,11 @@ use crate::{
     app_config::{
         DEFAULT_ACTIVITY_TYPE, DEFAULT_BUTTON_1_LABEL, DEFAULT_BUTTON_1_URL,
         DEFAULT_BUTTON_2_LABEL, DEFAULT_BUTTON_2_URL, DEFAULT_CUSTOM_TIMESTAMP_END,
-        DEFAULT_CUSTOM_TIMESTAMP_START, DEFAULT_ICON_KEY, DEFAULT_ICON_TEXT, DEFAULT_IDLE_MESSAGE,
-        DEFAULT_PRESENCE_MESSAGE, DEFAULT_RPC_NAME, DEFAULT_SHARE_BUTTON_LABEL,
-        DEFAULT_SMALL_ICON_KEY, DEFAULT_SMALL_ICON_TEXT, DEFAULT_STATE_TEXT,
-        DEFAULT_TIMESTAMP_MODE, DISCORD_CLIENT_ID,
+        DEFAULT_CUSTOM_TIMESTAMP_START, DEFAULT_ICON_KEY, DEFAULT_ICON_TEXT, DEFAULT_ICON_URL,
+        DEFAULT_IDLE_MESSAGE, DEFAULT_PRESENCE_MESSAGE, DEFAULT_PRESENCE_URL, DEFAULT_RPC_NAME,
+        DEFAULT_SMALL_ICON_KEY, DEFAULT_SMALL_ICON_TEXT, DEFAULT_SMALL_ICON_URL,
+        DEFAULT_STATE_TEXT, DEFAULT_STATE_URL, DEFAULT_STATUS_DISPLAY_TYPE, DEFAULT_TIMESTAMP_MODE,
+        DISCORD_CLIENT_ID,
     },
     clip_studio::{detect_clip_studio, ClipStudioDetection},
 };
@@ -26,24 +27,34 @@ pub struct Settings {
     pub discord_client_id: String,
     #[serde(default = "default_activity_type")]
     pub activity_type: String,
+    #[serde(default = "default_status_display_type")]
+    pub status_display_type: String,
     #[serde(default = "default_rpc_name")]
     pub rpc_name: String,
     #[serde(default)]
     pub rpc_name_from_document: bool,
     #[serde(default = "default_presence_message")]
     pub presence_message: String,
+    #[serde(default = "default_presence_url")]
+    pub presence_url: String,
     #[serde(default = "default_idle_message")]
     pub idle_message: String,
     #[serde(default = "default_state_text")]
     pub state_text: String,
+    #[serde(default = "default_state_url")]
+    pub state_url: String,
     #[serde(default = "default_icon_key")]
     pub icon_key: String,
     #[serde(default = "default_icon_text")]
     pub icon_text: String,
+    #[serde(default = "default_icon_url")]
+    pub icon_url: String,
     #[serde(default = "default_small_icon_key")]
     pub small_icon_key: String,
     #[serde(default = "default_small_icon_text")]
     pub small_icon_text: String,
+    #[serde(default = "default_small_icon_url")]
+    pub small_icon_url: String,
     #[serde(default = "default_button_1_label")]
     pub button_1_label: String,
     #[serde(default = "default_button_1_url")]
@@ -52,8 +63,6 @@ pub struct Settings {
     pub button_2_label: String,
     #[serde(default = "default_button_2_url")]
     pub button_2_url: String,
-    #[serde(default = "default_share_button_label")]
-    pub share_button_label: String,
     #[serde(default = "default_timestamp_mode")]
     pub timestamp_mode: String,
     #[serde(default = "default_custom_timestamp_start")]
@@ -79,20 +88,24 @@ impl Default for Settings {
         Self {
             discord_client_id: default_discord_client_id(),
             activity_type: default_activity_type(),
+            status_display_type: default_status_display_type(),
             rpc_name: default_rpc_name(),
             rpc_name_from_document: false,
             presence_message: default_presence_message(),
+            presence_url: default_presence_url(),
             idle_message: default_idle_message(),
             state_text: default_state_text(),
+            state_url: default_state_url(),
             icon_key: default_icon_key(),
             icon_text: default_icon_text(),
+            icon_url: default_icon_url(),
             small_icon_key: default_small_icon_key(),
             small_icon_text: default_small_icon_text(),
+            small_icon_url: default_small_icon_url(),
             button_1_label: default_button_1_label(),
             button_1_url: default_button_1_url(),
             button_2_label: default_button_2_label(),
             button_2_url: default_button_2_url(),
-            share_button_label: default_share_button_label(),
             timestamp_mode: default_timestamp_mode(),
             custom_timestamp_start: default_custom_timestamp_start(),
             custom_timestamp_end: default_custom_timestamp_end(),
@@ -213,9 +226,9 @@ impl AppState {
             let mut presence = PresenceClient::default();
 
             loop {
-                let (settings, shared_screenshot_url) = {
+                let settings = {
                     let inner = state.inner.lock().expect("app state lock poisoned");
-                    (inner.settings.clone(), inner.shared_screenshot_url.clone())
+                    inner.settings.clone()
                 };
 
                 let mut detection = detect_clip_studio();
@@ -231,12 +244,7 @@ impl AppState {
                     inner.focus_stats.update(&detection);
                     inner.focus_stats.procrastination_percent()
                 };
-                let presence_state = presence.sync(
-                    &settings,
-                    &detection,
-                    shared_screenshot_url.as_deref(),
-                    procrastination_percent,
-                );
+                let presence_state = presence.sync(&settings, &detection, procrastination_percent);
 
                 {
                     let mut inner = state.inner.lock().expect("app state lock poisoned");
@@ -316,6 +324,10 @@ fn default_presence_message() -> String {
     DEFAULT_PRESENCE_MESSAGE.to_string()
 }
 
+fn default_presence_url() -> String {
+    DEFAULT_PRESENCE_URL.to_string()
+}
+
 fn default_rpc_name() -> String {
     DEFAULT_RPC_NAME.to_string()
 }
@@ -328,6 +340,10 @@ fn default_activity_type() -> String {
     DEFAULT_ACTIVITY_TYPE.to_string()
 }
 
+fn default_status_display_type() -> String {
+    DEFAULT_STATUS_DISPLAY_TYPE.to_string()
+}
+
 fn default_icon_key() -> String {
     DEFAULT_ICON_KEY.to_string()
 }
@@ -336,8 +352,16 @@ fn default_state_text() -> String {
     DEFAULT_STATE_TEXT.to_string()
 }
 
+fn default_state_url() -> String {
+    DEFAULT_STATE_URL.to_string()
+}
+
 fn default_icon_text() -> String {
     DEFAULT_ICON_TEXT.to_string()
+}
+
+fn default_icon_url() -> String {
+    DEFAULT_ICON_URL.to_string()
 }
 
 fn default_small_icon_key() -> String {
@@ -346,6 +370,10 @@ fn default_small_icon_key() -> String {
 
 fn default_small_icon_text() -> String {
     DEFAULT_SMALL_ICON_TEXT.to_string()
+}
+
+fn default_small_icon_url() -> String {
+    DEFAULT_SMALL_ICON_URL.to_string()
 }
 
 fn default_button_1_label() -> String {
@@ -362,10 +390,6 @@ fn default_button_2_label() -> String {
 
 fn default_button_2_url() -> String {
     DEFAULT_BUTTON_2_URL.to_string()
-}
-
-fn default_share_button_label() -> String {
-    DEFAULT_SHARE_BUTTON_LABEL.to_string()
 }
 
 fn default_timestamp_mode() -> String {

@@ -1,13 +1,13 @@
 use crate::{
     app_config::{
         DEFAULT_ACTIVITY_TYPE, DEFAULT_ICON_KEY, DEFAULT_ICON_TEXT, DEFAULT_IDLE_MESSAGE,
-        DEFAULT_PRESENCE_MESSAGE, DEFAULT_RPC_NAME, DEFAULT_SHARE_BUTTON_LABEL, DEFAULT_STATE_TEXT,
-        DISCORD_CLIENT_ID,
+        DEFAULT_PRESENCE_MESSAGE, DEFAULT_RPC_NAME, DEFAULT_STATE_TEXT, DISCORD_CLIENT_ID,
     },
     app_state::Settings,
     clip_studio::ClipStudioDetection,
 };
 use discord_rich_presence::{DiscordIpc, DiscordIpcClient};
+use serde::Serialize;
 use serde_json::{json, Map, Value};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -22,6 +22,12 @@ pub struct PresenceClient {
     client_id: String,
     active_since: Option<i64>,
     app_started_at: i64,
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct PresenceButton {
+    label: String,
+    url: String,
 }
 
 impl Default for PresenceClient {
@@ -40,7 +46,6 @@ impl PresenceClient {
         &mut self,
         settings: &Settings,
         detection: &ClipStudioDetection,
-        shared_screenshot_url: Option<&str>,
         procrastination_percent: Option<u8>,
     ) -> PresenceState {
         if !detection.running {
@@ -72,12 +77,7 @@ impl PresenceClient {
             self.active_since = Some(now_unix());
         }
 
-        let activity = self.activity(
-            settings,
-            detection,
-            shared_screenshot_url,
-            procrastination_percent,
-        );
+        let activity = self.activity(settings, detection, procrastination_percent);
 
         match self
             .client
@@ -118,7 +118,6 @@ impl PresenceClient {
         &self,
         settings: &Settings,
         detection: &ClipStudioDetection,
-        shared_screenshot_url: Option<&str>,
         procrastination_percent: Option<u8>,
     ) -> Value {
         let mut activity = Map::new();
@@ -132,6 +131,11 @@ impl PresenceClient {
             "type".to_string(),
             Value::Number(activity_type_value(&settings.activity_type).into()),
         );
+        activity.insert(
+            "status_display_type".to_string(),
+            Value::Number(status_display_type_value(&settings.status_display_type).into()),
+        );
+        activity.insert("instance".to_string(), Value::Bool(true));
 
         let mut details = if detection.focused {
             activity_text(&settings.presence_message, DEFAULT_PRESENCE_MESSAGE, 128)
@@ -142,6 +146,11 @@ impl PresenceClient {
             details = with_procrastination_percent(details, procrastination_percent, 128);
         }
         activity.insert("details".to_string(), Value::String(details));
+        if detection.focused {
+            if let Some(url) = processed_url(&settings.presence_url) {
+                activity.insert("details_url".to_string(), Value::String(url));
+            }
+        }
 
         if detection.focused {
             let state = if settings.show_document_name {
@@ -158,6 +167,9 @@ impl PresenceClient {
                 state = with_procrastination_percent(state, procrastination_percent, 128);
             }
             activity.insert("state".to_string(), Value::String(state));
+            if let Some(url) = processed_url(&settings.state_url) {
+                activity.insert("state_url".to_string(), Value::String(url));
+            }
         }
 
         if let Some(timestamps) = self.timestamps(settings, detection.focused) {
@@ -174,7 +186,7 @@ impl PresenceClient {
             }
         }
 
-        if let Some(buttons) = buttons(settings, shared_screenshot_url) {
+        if let Some(buttons) = buttons(settings) {
             activity.insert("buttons".to_string(), buttons);
         }
 
@@ -278,6 +290,14 @@ fn activity_type_value(value: &str) -> u8 {
     }
 }
 
+fn status_display_type_value(value: &str) -> u8 {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "state" => 1,
+        "details" => 2,
+        _ => 0,
+    }
+}
+
 fn valid_button_url(url: &str) -> Option<&str> {
     let url = url.trim();
     if url.len() <= 512 && (url.starts_with("https://") || url.starts_with("http://")) {
@@ -287,7 +307,7 @@ fn valid_button_url(url: &str) -> Option<&str> {
     }
 }
 
-fn normalized_button_url(url: &str) -> Option<String> {
+fn processed_url(url: &str) -> Option<String> {
     let url = url.trim();
     if url.is_empty() {
         return None;
@@ -302,7 +322,7 @@ fn normalized_button_url(url: &str) -> Option<String> {
     valid_button_url(&url).map(ToString::to_string)
 }
 
-fn push_custom_button(buttons: &mut Vec<Value>, label: &str, url: &str) {
+fn push_button(buttons: &mut Vec<PresenceButton>, label: &str, url: &str) {
     if buttons.len() >= 2 {
         return;
     }
@@ -310,14 +330,11 @@ fn push_custom_button(buttons: &mut Vec<Value>, label: &str, url: &str) {
     let Some(label) = optional_text(label, 32) else {
         return;
     };
-    let Some(url) = normalized_button_url(url) else {
+    let Some(url) = processed_url(url) else {
         return;
     };
 
-    buttons.push(json!({
-        "label": label,
-        "url": url
-    }));
+    buttons.push(PresenceButton { label, url });
 }
 
 fn configured_client_id(settings: &Settings) -> String {
@@ -341,12 +358,18 @@ fn assets(settings: &Settings) -> Option<Value> {
         if !icon_text.is_empty() {
             assets.insert("large_text".to_string(), Value::String(icon_text));
         }
+        if let Some(icon_url) = processed_url(&settings.icon_url) {
+            assets.insert("large_url".to_string(), Value::String(icon_url));
+        }
     }
 
     if let Some(small_icon_key) = small_icon_key {
         assets.insert("small_image".to_string(), Value::String(small_icon_key));
         if let Some(small_icon_text) = small_icon_text {
             assets.insert("small_text".to_string(), Value::String(small_icon_text));
+        }
+        if let Some(small_icon_url) = processed_url(&settings.small_icon_url) {
+            assets.insert("small_url".to_string(), Value::String(small_icon_url));
         }
     }
 
@@ -357,22 +380,15 @@ fn assets(settings: &Settings) -> Option<Value> {
     }
 }
 
-fn buttons(settings: &Settings, shared_screenshot_url: Option<&str>) -> Option<Value> {
+fn buttons(settings: &Settings) -> Option<Value> {
     let mut buttons = Vec::with_capacity(2);
-    let button_label = activity_text(&settings.share_button_label, DEFAULT_SHARE_BUTTON_LABEL, 32);
-    if let Some(url) = shared_screenshot_url.and_then(valid_button_url) {
-        buttons.push(json!({
-            "label": button_label,
-            "url": url
-        }));
-    }
 
-    push_custom_button(
+    push_button(
         &mut buttons,
         &settings.button_1_label,
         &settings.button_1_url,
     );
-    push_custom_button(
+    push_button(
         &mut buttons,
         &settings.button_2_label,
         &settings.button_2_url,
@@ -381,7 +397,7 @@ fn buttons(settings: &Settings, shared_screenshot_url: Option<&str>) -> Option<V
     if buttons.is_empty() {
         None
     } else {
-        Some(Value::Array(buttons))
+        serde_json::to_value(buttons).ok()
     }
 }
 

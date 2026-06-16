@@ -4,20 +4,24 @@ import "./styles.css";
 const fields = {
   discordClientId: document.querySelector("#discord-client-id"),
   activityType: document.querySelector("#activity-type"),
+  statusDisplayType: document.querySelector("#status-display-type"),
   rpcName: document.querySelector("#rpc-name"),
   rpcNameFromDocument: document.querySelector("#rpc-name-from-document"),
   presenceMessage: document.querySelector("#presence-message"),
+  presenceUrl: document.querySelector("#presence-url"),
   idleMessage: document.querySelector("#idle-message"),
   stateText: document.querySelector("#state-text"),
+  stateUrl: document.querySelector("#state-url"),
   iconKey: document.querySelector("#icon-key"),
   iconText: document.querySelector("#icon-text"),
+  iconUrl: document.querySelector("#icon-url"),
   smallIconKey: document.querySelector("#small-icon-key"),
   smallIconText: document.querySelector("#small-icon-text"),
+  smallIconUrl: document.querySelector("#small-icon-url"),
   button1Label: document.querySelector("#button-1-label"),
   button1Url: document.querySelector("#button-1-url"),
   button2Label: document.querySelector("#button-2-label"),
   button2Url: document.querySelector("#button-2-url"),
-  shareButtonLabel: document.querySelector("#share-button-label"),
   timestampMode: document.querySelector("#timestamp-mode"),
   customTimestampStart: document.querySelector("#custom-timestamp-start"),
   customTimestampEnd: document.querySelector("#custom-timestamp-end"),
@@ -49,20 +53,24 @@ let currentStatus = null;
 function applySettings(settings) {
   fields.discordClientId.value = settings.discord_client_id ?? "1516410830063796294";
   fields.activityType.value = settings.activity_type ?? "playing";
+  fields.statusDisplayType.value = settings.status_display_type ?? "name";
   fields.rpcName.value = settings.rpc_name ?? "Clip Studio Paint";
   fields.rpcNameFromDocument.checked = settings.rpc_name_from_document ?? false;
   fields.presenceMessage.value = settings.presence_message ?? "Drawing in Clip Studio Paint";
+  fields.presenceUrl.value = settings.presence_url ?? "";
   fields.idleMessage.value = settings.idle_message ?? "Procrastinating teehee";
   fields.stateText.value = settings.state_text ?? "Working on an illustration";
+  fields.stateUrl.value = settings.state_url ?? "";
   fields.iconKey.value = settings.icon_key ?? "icon_1";
   fields.iconText.value = settings.icon_text ?? "Clip Studio Paint";
+  fields.iconUrl.value = settings.icon_url ?? "";
   fields.smallIconKey.value = settings.small_icon_key ?? "";
   fields.smallIconText.value = settings.small_icon_text ?? "";
+  fields.smallIconUrl.value = settings.small_icon_url ?? "";
   fields.button1Label.value = settings.button_1_label ?? "";
   fields.button1Url.value = settings.button_1_url ?? "";
   fields.button2Label.value = settings.button_2_label ?? "";
   fields.button2Url.value = settings.button_2_url ?? "";
-  fields.shareButtonLabel.value = settings.share_button_label ?? "See what I'm working on";
   fields.timestampMode.value = settings.timestamp_mode ?? "activity";
   fields.customTimestampStart.value = unixToDateTimeLocal(settings.custom_timestamp_start);
   fields.customTimestampEnd.value = unixToDateTimeLocal(settings.custom_timestamp_end);
@@ -78,20 +86,24 @@ function readSettings() {
   return {
     discord_client_id: fields.discordClientId.value.trim() || "1516410830063796294",
     activity_type: fields.activityType.value,
+    status_display_type: fields.statusDisplayType.value,
     rpc_name: fields.rpcName.value.trim() || "Clip Studio Paint",
     rpc_name_from_document: fields.rpcNameFromDocument.checked,
     presence_message: fields.presenceMessage.value.trim() || "Drawing in Clip Studio Paint",
+    presence_url: fields.presenceUrl.value.trim(),
     idle_message: fields.idleMessage.value.trim() || "Procrastinating teehee",
     state_text: fields.stateText.value.trim() || "Working on an illustration",
+    state_url: fields.stateUrl.value.trim(),
     icon_key: fields.iconKey.value.trim() || "icon_1",
     icon_text: fields.iconText.value.trim() || "Clip Studio Paint",
+    icon_url: fields.iconUrl.value.trim(),
     small_icon_key: fields.smallIconKey.value.trim(),
     small_icon_text: fields.smallIconText.value.trim(),
+    small_icon_url: fields.smallIconUrl.value.trim(),
     button_1_label: fields.button1Label.value.trim(),
     button_1_url: fields.button1Url.value.trim(),
     button_2_label: fields.button2Label.value.trim(),
     button_2_url: fields.button2Url.value.trim(),
-    share_button_label: fields.shareButtonLabel.value.trim() || "See what I'm working on",
     timestamp_mode: fields.timestampMode.value,
     custom_timestamp_start: dateTimeLocalToUnix(fields.customTimestampStart.value),
     custom_timestamp_end: dateTimeLocalToUnix(fields.customTimestampEnd.value),

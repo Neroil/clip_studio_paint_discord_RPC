@@ -55,6 +55,15 @@
             </select>
           </label>
 
+          <label>
+            Profile line
+            <select id="status-display-type" name="statusDisplayType">
+              <option value="name">RPC name</option>
+              <option value="details">Details</option>
+              <option value="state">State</option>
+            </select>
+          </label>
+
           <div class="wide-field field-block">
             <label for="rpc-name">RPC name</label>
             <span class="inline-input">
@@ -82,6 +91,17 @@
             />
           </label>
 
+          <label>
+            Details URL
+            <input
+              id="presence-url"
+              name="presenceUrl"
+              autocomplete="off"
+              maxlength="512"
+              placeholder="https://example.com"
+            />
+          </label>
+
           <label class="wide-field">
             State fallback
             <input
@@ -90,6 +110,17 @@
               autocomplete="off"
               maxlength="128"
               placeholder="Working on an illustration"
+            />
+          </label>
+
+          <label class="wide-field">
+            State URL
+            <input
+              id="state-url"
+              name="stateUrl"
+              autocomplete="off"
+              maxlength="512"
+              placeholder="https://example.com/status"
             />
           </label>
 
@@ -147,6 +178,17 @@
             </label>
 
             <label>
+              Large URL
+              <input
+                id="icon-url"
+                name="iconUrl"
+                autocomplete="off"
+                maxlength="512"
+                placeholder="https://example.com"
+              />
+            </label>
+
+            <label>
               Small key
               <input
                 id="small-icon-key"
@@ -155,6 +197,17 @@
                 autocomplete="off"
                 maxlength="128"
                 placeholder="icon_2"
+              />
+            </label>
+
+            <label>
+              Small URL
+              <input
+                id="small-icon-url"
+                name="smallIconUrl"
+                autocomplete="off"
+                maxlength="512"
+                placeholder="https://example.com"
               />
             </label>
 
@@ -180,19 +233,6 @@
         <details>
           <summary>Buttons</summary>
           <div class="details-grid">
-            <label>
-              Share label
-              <input
-                id="share-button-label"
-                name="shareButtonLabel"
-                autocomplete="off"
-                maxlength="32"
-                placeholder="See what I'm working on"
-              />
-            </label>
-
-            <span></span>
-
             <label>
               Button 1
               <input
