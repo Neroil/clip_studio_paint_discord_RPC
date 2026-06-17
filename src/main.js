@@ -22,6 +22,8 @@ const fields = {
   button1Url: document.querySelector("#button-1-url"),
   button2Label: document.querySelector("#button-2-label"),
   button2Url: document.querySelector("#button-2-url"),
+  applyScreenshotLut: document.querySelector("#apply-screenshot-lut"),
+  screenshotLutPath: document.querySelector("#screenshot-lut-path"),
   timestampMode: document.querySelector("#timestamp-mode"),
   customTimestampStart: document.querySelector("#custom-timestamp-start"),
   customTimestampEnd: document.querySelector("#custom-timestamp-end"),
@@ -71,6 +73,8 @@ function applySettings(settings) {
   fields.button1Url.value = settings.button_1_url ?? "";
   fields.button2Label.value = settings.button_2_label ?? "";
   fields.button2Url.value = settings.button_2_url ?? "";
+  fields.applyScreenshotLut.checked = settings.apply_screenshot_lut ?? false;
+  fields.screenshotLutPath.value = settings.screenshot_lut_path ?? "";
   fields.timestampMode.value = settings.timestamp_mode ?? "activity";
   fields.customTimestampStart.value = unixToDateTimeLocal(settings.custom_timestamp_start);
   fields.customTimestampEnd.value = unixToDateTimeLocal(settings.custom_timestamp_end);
@@ -80,6 +84,7 @@ function applySettings(settings) {
   fields.showElapsedTime.checked = settings.show_elapsed_time;
   fields.showProcrastinationPercent.checked = settings.show_procrastination_percent ?? true;
   updateCustomTimestampVisibility();
+  updateScreenshotLutVisibility();
 }
 
 function readSettings() {
@@ -104,6 +109,8 @@ function readSettings() {
     button_1_url: fields.button1Url.value.trim(),
     button_2_label: fields.button2Label.value.trim(),
     button_2_url: fields.button2Url.value.trim(),
+    apply_screenshot_lut: fields.applyScreenshotLut.checked,
+    screenshot_lut_path: fields.screenshotLutPath.value.trim(),
     timestamp_mode: fields.timestampMode.value,
     custom_timestamp_start: dateTimeLocalToUnix(fields.customTimestampStart.value),
     custom_timestamp_end: dateTimeLocalToUnix(fields.customTimestampEnd.value),
@@ -145,6 +152,10 @@ function dateTimeLocalToUnix(value) {
 function updateCustomTimestampVisibility() {
   const visible = fields.timestampMode.value === "custom";
   document.querySelector("#custom-timestamp-fields").hidden = !visible;
+}
+
+function updateScreenshotLutVisibility() {
+  fields.screenshotLutPath.disabled = !fields.applyScreenshotLut.checked;
 }
 
 function setPill(status) {
@@ -276,6 +287,8 @@ refreshButton.addEventListener("click", refreshStatus);
 captureButton.addEventListener("click", captureAndShare);
 useCurrentFileButton.addEventListener("click", useCurrentFileName);
 fields.timestampMode.addEventListener("change", updateCustomTimestampVisibility);
+fields.applyScreenshotLut.addEventListener("change", updateScreenshotLutVisibility);
 
 refreshStatus();
+updateScreenshotLutVisibility();
 setInterval(refreshStatus, 3000);

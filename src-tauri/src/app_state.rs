@@ -1,10 +1,11 @@
 use crate::discord_presence::PresenceClient;
 use crate::{
     app_config::{
-        DEFAULT_ACTIVITY_TYPE, DEFAULT_BUTTON_1_LABEL, DEFAULT_BUTTON_1_URL,
-        DEFAULT_BUTTON_2_LABEL, DEFAULT_BUTTON_2_URL, DEFAULT_CUSTOM_TIMESTAMP_END,
-        DEFAULT_CUSTOM_TIMESTAMP_START, DEFAULT_ICON_KEY, DEFAULT_ICON_TEXT, DEFAULT_ICON_URL,
-        DEFAULT_IDLE_MESSAGE, DEFAULT_PRESENCE_MESSAGE, DEFAULT_PRESENCE_URL, DEFAULT_RPC_NAME,
+        DEFAULT_ACTIVITY_TYPE, DEFAULT_APPLY_SCREENSHOT_LUT, DEFAULT_BUTTON_1_LABEL,
+        DEFAULT_BUTTON_1_URL, DEFAULT_BUTTON_2_LABEL, DEFAULT_BUTTON_2_URL,
+        DEFAULT_CUSTOM_TIMESTAMP_END, DEFAULT_CUSTOM_TIMESTAMP_START, DEFAULT_ICON_KEY,
+        DEFAULT_ICON_TEXT, DEFAULT_ICON_URL, DEFAULT_IDLE_MESSAGE, DEFAULT_PRESENCE_MESSAGE,
+        DEFAULT_PRESENCE_URL, DEFAULT_RPC_NAME, DEFAULT_SCREENSHOT_LUT_PATH,
         DEFAULT_SMALL_ICON_KEY, DEFAULT_SMALL_ICON_TEXT, DEFAULT_SMALL_ICON_URL,
         DEFAULT_STATE_TEXT, DEFAULT_STATE_URL, DEFAULT_STATUS_DISPLAY_TYPE, DEFAULT_TIMESTAMP_MODE,
         DISCORD_CLIENT_ID,
@@ -63,6 +64,10 @@ pub struct Settings {
     pub button_2_label: String,
     #[serde(default = "default_button_2_url")]
     pub button_2_url: String,
+    #[serde(default = "default_apply_screenshot_lut")]
+    pub apply_screenshot_lut: bool,
+    #[serde(default = "default_screenshot_lut_path")]
+    pub screenshot_lut_path: String,
     #[serde(default = "default_timestamp_mode")]
     pub timestamp_mode: String,
     #[serde(default = "default_custom_timestamp_start")]
@@ -106,6 +111,8 @@ impl Default for Settings {
             button_1_url: default_button_1_url(),
             button_2_label: default_button_2_label(),
             button_2_url: default_button_2_url(),
+            apply_screenshot_lut: default_apply_screenshot_lut(),
+            screenshot_lut_path: default_screenshot_lut_path(),
             timestamp_mode: default_timestamp_mode(),
             custom_timestamp_start: default_custom_timestamp_start(),
             custom_timestamp_end: default_custom_timestamp_end(),
@@ -399,6 +406,14 @@ fn default_button_2_label() -> String {
 
 fn default_button_2_url() -> String {
     DEFAULT_BUTTON_2_URL.to_string()
+}
+
+fn default_apply_screenshot_lut() -> bool {
+    DEFAULT_APPLY_SCREENSHOT_LUT
+}
+
+fn default_screenshot_lut_path() -> String {
+    DEFAULT_SCREENSHOT_LUT_PATH.to_string()
 }
 
 fn default_timestamp_mode() -> String {

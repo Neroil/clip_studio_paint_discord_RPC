@@ -22,7 +22,9 @@ fn save_settings(settings: Settings, state: State<'_, AppState>) -> Result<AppSt
 
 #[tauri::command]
 fn capture_and_share(app: AppHandle, state: State<'_, AppState>) -> Result<AppStatus, String> {
-    let result = capture_share::capture_and_upload(&app).map_err(|error| error.to_string())?;
+    let settings = state.snapshot().settings;
+    let result =
+        capture_share::capture_and_upload(&app, &settings).map_err(|error| error.to_string())?;
     state.set_shared_screenshot(result.url);
     Ok(state.snapshot())
 }
