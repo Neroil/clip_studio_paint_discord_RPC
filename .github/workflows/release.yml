@@ -35,16 +35,23 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Build and upload Tauri bundles
-        uses: tauri-apps/tauri-action@v1
+      - name: Build Tauri installer
+        run: npm run tauri build -- --bundles nsis
+
+      - name: Upload installer to GitHub release
+        shell: pwsh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tagName }}
-          releaseName: "Clip Studio Presence ${{ github.ref_type == 'tag' && github.ref_name || inputs.tagName }}"
-          releaseBody: "Windows installers are attached below."
-          releaseDraft: false
-          prerelease: false
-          generateReleaseNotes: true
-          args: "--bundles nsis"
-          releaseAssetNamePattern: "[name]_[version]_[platform]_[arch].[ext]"
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tagName }}
+        run: |
+          $installer = Get-ChildItem "src-tauri/target/release/bundle/nsis" -Filter "*setup.exe" | Select-Object -First 1
+          if (-not $installer) {
+            throw "No NSIS setup installer was produced."
+          }
+
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $env:RELEASE_TAG --title "Clip Studio Presence $env:RELEASE_TAG" --notes "Windows setup installer is attached below." --generate-notes
+          }
+
+          gh release upload $env:RELEASE_TAG $installer.FullName --clobber
