@@ -36,9 +36,10 @@ The app settings can customize the Rich Presence activity label, details text, s
 small image keys, image hover text, timestamp mode, party size, and up to two buttons. If **Show
 document name** is enabled, the state line uses the active Clip Studio Paint window title when
 available and falls back to the configured state text.
-The app can also register itself to start with Windows. Pressing the window close button minimizes
-the app instead of exiting so Discord Rich Presence and auto-capture can keep running. Use **Check
-for Updates** to compare the installed version against the latest GitHub release.
+The app can also register itself to start with Windows. Pressing the window close button hides the
+app in the system tray instead of exiting so Discord Rich Presence and auto-capture can keep running.
+Right-click the tray icon to open, hide, or exit the app. Use **Check for Updates** to compare the
+installed version against the latest GitHub release.
 Fully automatic in-app installation can be added once releases include signed Tauri updater artifacts.
 
 Discord allows a maximum of two Rich Presence buttons. When **Capture & Share** has a screenshot URL,
