@@ -51,16 +51,20 @@ fn sanitize_window_title(title: &str) -> Option<String> {
 }
 
 #[cfg(windows)]
-mod windows {
-    use std::mem::{size_of, zeroed};
+pub(crate) mod windows {
+    use std::{
+        ffi::c_void,
+        mem::{size_of, zeroed},
+    };
     use windows_sys::Win32::{
-        Foundation::{CloseHandle, HWND, INVALID_HANDLE_VALUE},
+        Foundation::{CloseHandle, BOOL, HWND, INVALID_HANDLE_VALUE, LPARAM},
         System::Diagnostics::ToolHelp::{
             CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
             TH32CS_SNAPPROCESS,
         },
         UI::WindowsAndMessaging::{
-            GetForegroundWindow, GetWindowTextLengthW, GetWindowTextW, GetWindowThreadProcessId,
+            EnumWindows, GetForegroundWindow, GetWindowTextLengthW, GetWindowTextW,
+            GetWindowThreadProcessId, IsWindowVisible,
         },
     };
 
@@ -123,6 +127,56 @@ mod windows {
         }
 
         Some(WindowInfo { pid, title })
+    }
+
+    pub fn clip_studio_window() -> Option<HWND> {
+        let pids = clip_studio_process_ids();
+        if pids.is_empty() {
+            return None;
+        }
+
+        let mut matches = Vec::<HWND>::new();
+        let mut context = WindowSearchContext {
+            pids: &pids,
+            matches: &mut matches,
+        };
+
+        unsafe {
+            EnumWindows(
+                Some(enum_windows_callback),
+                (&mut context as *mut WindowSearchContext).cast::<c_void>() as LPARAM,
+            );
+        }
+
+        matches.into_iter().next()
+    }
+
+    fn clip_studio_process_ids() -> Vec<u32> {
+        clip_studio_processes()
+            .into_iter()
+            .map(|process| process.pid)
+            .collect()
+    }
+
+    struct WindowSearchContext<'a> {
+        pids: &'a [u32],
+        matches: &'a mut Vec<HWND>,
+    }
+
+    unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
+        let context = &mut *(lparam as *mut WindowSearchContext);
+        if IsWindowVisible(hwnd) == 0 || window_title(hwnd).is_none() {
+            return 1;
+        }
+
+        let mut pid = 0;
+        GetWindowThreadProcessId(hwnd, &mut pid);
+        if context.pids.contains(&pid) {
+            context.matches.push(hwnd);
+            return 0;
+        }
+
+        1
     }
 
     fn window_title(hwnd: HWND) -> Option<String> {

@@ -1,8 +1,8 @@
 use crate::{
     app_config::{
         DEFAULT_ACTIVITY_TYPE, DEFAULT_ICON_KEY, DEFAULT_ICON_TEXT, DEFAULT_IDLE_MESSAGE,
-        DEFAULT_PRESENCE_MESSAGE, DEFAULT_RPC_NAME, DEFAULT_SHARE_BUTTON_LABEL,
-        DEFAULT_STATE_TEXT, DISCORD_CLIENT_ID,
+        DEFAULT_PRESENCE_MESSAGE, DEFAULT_RPC_NAME, DEFAULT_SHARE_BUTTON_LABEL, DEFAULT_STATE_TEXT,
+        DISCORD_CLIENT_ID,
     },
     app_state::Settings,
     clip_studio::ClipStudioDetection,
@@ -294,7 +294,8 @@ fn activity_type_value(value: &str) -> u8 {
         "listening" => 2,
         "watching" => 3,
         "competing" => 5,
-        DEFAULT_ACTIVITY_TYPE | _ => 0,
+        DEFAULT_ACTIVITY_TYPE => 0,
+        _ => 0,
     }
 }
 

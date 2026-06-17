@@ -81,7 +81,7 @@ function applySettings(settings) {
   fields.button2Url.value = settings.button_2_url ?? "";
   fields.applyScreenshotLut.checked = settings.apply_screenshot_lut ?? false;
   fields.screenshotLutPath.value = settings.screenshot_lut_path ?? "";
-  fields.autoCaptureScreenshot.checked = settings.auto_capture_screenshot ?? true;
+  fields.autoCaptureScreenshot.checked = settings.auto_capture_screenshot ?? false;
   fields.autoCaptureInitialDelaySeconds.value =
     settings.auto_capture_initial_delay_seconds ?? 30;
   fields.autoCaptureIntervalSeconds.value = settings.auto_capture_interval_seconds ?? 300;

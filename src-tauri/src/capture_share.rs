@@ -1,10 +1,4 @@
-use std::{
-    ffi::c_void,
-    fs,
-    io::Cursor,
-    mem::{size_of, zeroed},
-    path::Path,
-};
+use std::{fs, io::Cursor, mem::zeroed, path::Path};
 
 use crate::app_state::Settings;
 use reqwest::blocking::{multipart, Client};
@@ -408,28 +402,21 @@ pub enum CaptureShareError {
 #[cfg(windows)]
 mod windows_capture {
     use super::*;
+    use crate::clip_studio::windows::clip_studio_window;
+    use std::ffi::c_void;
     use windows_sys::Win32::{
-        Foundation::{CloseHandle, BOOL, HWND, INVALID_HANDLE_VALUE, LPARAM, RECT},
+        Foundation::{HWND, RECT},
         Graphics::Gdi::{
             BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDIBits,
             GetWindowDC, ReleaseDC, SelectObject, BITMAPINFO, BI_RGB, DIB_RGB_COLORS, RGBQUAD,
             SRCCOPY,
         },
         Storage::Xps::PrintWindow,
-        System::Diagnostics::ToolHelp::{
-            CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
-            TH32CS_SNAPPROCESS,
-        },
-        UI::WindowsAndMessaging::{
-            EnumWindows, GetWindowRect, GetWindowTextLengthW, GetWindowTextW,
-            GetWindowThreadProcessId, IsWindowVisible,
-        },
+        UI::WindowsAndMessaging::GetWindowRect,
     };
 
-    const CLIP_STUDIO_PROCESS_NAMES: &[&str] = &["CLIPStudioPaint.exe", "CLIPStudioPaintApp.exe"];
-
     pub fn capture_clip_studio_png() -> Result<Vec<u8>, CaptureShareError> {
-        let hwnd = find_clip_studio_window()?;
+        let hwnd = clip_studio_window().ok_or(CaptureShareError::WindowNotFound)?;
         let mut rect = unsafe { zeroed::<RECT>() };
         if unsafe { GetWindowRect(hwnd, &mut rect) } == 0 {
             return Err(CaptureShareError::CaptureFailed);
@@ -443,52 +430,6 @@ mod windows_capture {
 
         let rgba = capture_window_rgba(hwnd, width, height)?;
         encode_png(width as u32, height as u32, &rgba)
-    }
-
-    fn find_clip_studio_window() -> Result<HWND, CaptureShareError> {
-        let pids = clip_studio_process_ids();
-        if pids.is_empty() {
-            return Err(CaptureShareError::WindowNotFound);
-        }
-
-        let mut matches = Vec::<HWND>::new();
-        let mut context = WindowSearchContext {
-            pids: &pids,
-            matches: &mut matches,
-        };
-
-        unsafe {
-            EnumWindows(
-                Some(enum_windows_callback),
-                (&mut context as *mut WindowSearchContext).cast::<c_void>() as LPARAM,
-            );
-        }
-
-        matches
-            .into_iter()
-            .next()
-            .ok_or(CaptureShareError::WindowNotFound)
-    }
-
-    struct WindowSearchContext<'a> {
-        pids: &'a [u32],
-        matches: &'a mut Vec<HWND>,
-    }
-
-    unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
-        let context = &mut *(lparam as *mut WindowSearchContext);
-        if IsWindowVisible(hwnd) == 0 || window_title(hwnd).is_none() {
-            return 1;
-        }
-
-        let mut pid = 0;
-        GetWindowThreadProcessId(hwnd, &mut pid);
-        if context.pids.contains(&pid) {
-            context.matches.push(hwnd);
-            return 0;
-        }
-
-        1
     }
 
     fn capture_window_rgba(
@@ -536,7 +477,7 @@ mod windows_capture {
             }],
         };
         bitmap_info.bmiHeader.biSize =
-            size_of::<windows_sys::Win32::Graphics::Gdi::BITMAPINFOHEADER>() as u32;
+            std::mem::size_of::<windows_sys::Win32::Graphics::Gdi::BITMAPINFOHEADER>() as u32;
         bitmap_info.bmiHeader.biWidth = width;
         bitmap_info.bmiHeader.biHeight = -height;
         bitmap_info.bmiHeader.biPlanes = 1;
@@ -584,58 +525,5 @@ mod windows_capture {
         writer.write_image_data(rgba)?;
         drop(writer);
         Ok(output.into_inner())
-    }
-
-    fn clip_studio_process_ids() -> Vec<u32> {
-        let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
-        if snapshot == INVALID_HANDLE_VALUE {
-            return Vec::new();
-        }
-
-        let mut entry = unsafe { zeroed::<PROCESSENTRY32W>() };
-        entry.dwSize = size_of::<PROCESSENTRY32W>() as u32;
-
-        let mut pids = Vec::new();
-        let mut has_entry = unsafe { Process32FirstW(snapshot, &mut entry) } != 0;
-
-        while has_entry {
-            let process_name = utf16z_to_string(&entry.szExeFile);
-            if CLIP_STUDIO_PROCESS_NAMES
-                .iter()
-                .any(|candidate| process_name.eq_ignore_ascii_case(candidate))
-            {
-                pids.push(entry.th32ProcessID);
-            }
-            has_entry = unsafe { Process32NextW(snapshot, &mut entry) } != 0;
-        }
-
-        unsafe {
-            CloseHandle(snapshot);
-        }
-
-        pids
-    }
-
-    fn window_title(hwnd: HWND) -> Option<String> {
-        let length = unsafe { GetWindowTextLengthW(hwnd) };
-        if length <= 0 {
-            return None;
-        }
-
-        let mut buffer = vec![0u16; length as usize + 1];
-        let copied = unsafe { GetWindowTextW(hwnd, buffer.as_mut_ptr(), buffer.len() as i32) };
-        if copied <= 0 {
-            return None;
-        }
-
-        Some(String::from_utf16_lossy(&buffer[..copied as usize]))
-    }
-
-    fn utf16z_to_string(buffer: &[u16]) -> String {
-        let end = buffer
-            .iter()
-            .position(|char| *char == 0)
-            .unwrap_or(buffer.len());
-        String::from_utf16_lossy(&buffer[..end])
     }
 }
