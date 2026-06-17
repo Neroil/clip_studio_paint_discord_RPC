@@ -48,6 +48,14 @@ const statusNodes = {
   sharedScreenshot: document.querySelector("#shared-screenshot"),
   message: document.querySelector("#status-message"),
   update: document.querySelector("#update-status"),
+  previewStatus: document.querySelector("#preview-status"),
+  previewLargeImage: document.querySelector("#preview-large-image"),
+  previewSmallImage: document.querySelector("#preview-small-image"),
+  previewName: document.querySelector("#preview-name"),
+  previewDetails: document.querySelector("#preview-details"),
+  previewState: document.querySelector("#preview-state"),
+  previewTime: document.querySelector("#preview-time"),
+  previewButtons: document.querySelector("#preview-buttons"),
 };
 
 const form = document.querySelector("#settings-form");
@@ -97,6 +105,7 @@ function applySettings(settings) {
   updateCustomTimestampVisibility();
   updateScreenshotLutVisibility();
   updateAutoCaptureVisibility();
+  updatePreview();
 }
 
 function readSettings() {
@@ -184,6 +193,164 @@ function updateAutoCaptureVisibility() {
   fields.autoCaptureIntervalSeconds.disabled = disabled;
 }
 
+function activityText(value, fallback, maxLength) {
+  const text = value.trim() || fallback;
+  return text.slice(0, maxLength);
+}
+
+function optionalText(value, maxLength) {
+  const text = value.trim();
+  return text ? text.slice(0, maxLength) : "";
+}
+
+function withProcrastinationPercent(text) {
+  if (!fields.showProcrastinationPercent.checked) {
+    return text;
+  }
+
+  const percent = currentStatus?.procrastination_percent ?? 0;
+  return `${text} (${percent}% procrastinated)`.slice(0, 128);
+}
+
+function previewDocumentTitle() {
+  return currentStatus?.document_title?.trim() || "";
+}
+
+function previewRpcName() {
+  if (fields.rpcNameFromDocument.checked && previewDocumentTitle()) {
+    return previewDocumentTitle();
+  }
+
+  return activityText(fields.rpcName.value, "Clip Studio Paint", 128);
+}
+
+function previewStateText(focused) {
+  if (!focused) {
+    return "";
+  }
+
+  const state = fields.showDocumentName.checked && previewDocumentTitle()
+    ? previewDocumentTitle()
+    : activityText(fields.stateText.value, "Working on an illustration", 128);
+  return withProcrastinationPercent(state);
+}
+
+function previewDetailsText(focused) {
+  const text = focused
+    ? activityText(fields.presenceMessage.value, "Drawing in Clip Studio Paint", 128)
+    : activityText(fields.idleMessage.value, "Procrastinating teehee", 128);
+
+  return focused ? text : withProcrastinationPercent(text);
+}
+
+function previewImageText(value, fallback) {
+  const text = activityText(value, fallback, 128);
+  return text
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "CS";
+}
+
+function previewButtonLabels() {
+  const labels = [];
+  if (currentStatus?.shared_screenshot_url) {
+    labels.push("See what I'm working on");
+    const button2 = previewButtonLabel(fields.button2Label.value, fields.button2Url.value);
+    if (button2) {
+      labels.push(button2);
+    }
+  } else {
+    const button1 = previewButtonLabel(fields.button1Label.value, fields.button1Url.value);
+    const button2 = previewButtonLabel(fields.button2Label.value, fields.button2Url.value);
+    if (button1) {
+      labels.push(button1);
+    }
+    if (button2) {
+      labels.push(button2);
+    }
+  }
+
+  return labels.slice(0, 2);
+}
+
+function previewButtonLabel(label, url) {
+  if (!processedUrl(url)) {
+    return "";
+  }
+
+  return optionalText(label, 32);
+}
+
+function processedUrl(url) {
+  const text = url.trim();
+  if (!text) {
+    return "";
+  }
+
+  const normalized = text.includes("://") ? text : `https://${text}`;
+  if (normalized.length > 512) {
+    return "";
+  }
+
+  return normalized.startsWith("https://") || normalized.startsWith("http://") ? normalized : "";
+}
+
+function updatePreview() {
+  const focused = currentStatus?.clip_studio_focused ?? true;
+  const running = currentStatus?.clip_studio_running ?? true;
+  statusNodes.previewStatus.textContent = running ? (focused ? "Focused" : "Away") : "Closed";
+  statusNodes.previewName.textContent = previewRpcName();
+  statusNodes.previewDetails.textContent = previewDetailsText(focused);
+
+  const state = previewStateText(focused);
+  statusNodes.previewState.textContent = state || "No state while away";
+  statusNodes.previewState.hidden = !state;
+  statusNodes.previewTime.textContent = fields.showElapsedTime.checked
+    ? timestampPreviewText(focused)
+    : "Timestamp hidden";
+
+  statusNodes.previewLargeImage.textContent = previewImageText(fields.iconText.value, "Clip Studio Paint");
+  const smallIcon = optionalText(fields.smallIconKey.value, 128);
+  statusNodes.previewSmallImage.hidden = !smallIcon;
+  statusNodes.previewSmallImage.textContent = previewImageText(fields.smallIconText.value, smallIcon);
+
+  const buttons = previewButtonLabels();
+  statusNodes.previewButtons.textContent = "";
+  statusNodes.previewButtons.hidden = buttons.length === 0;
+  for (const label of buttons) {
+    const node = document.createElement("span");
+    node.className = "preview-button";
+    node.textContent = label;
+    statusNodes.previewButtons.append(node);
+  }
+}
+
+function timestampPreviewText(focused) {
+  switch (fields.timestampMode.value) {
+    case "none":
+      return "Timestamp hidden";
+    case "app":
+      return "Since app start";
+    case "custom":
+      if (fields.customTimestampStart.value && fields.customTimestampEnd.value) {
+        return "Custom time range";
+      }
+      if (fields.customTimestampStart.value) {
+        return "Since custom start";
+      }
+      if (fields.customTimestampEnd.value) {
+        return "Until custom end";
+      }
+      return "Custom timestamp";
+    default:
+      return focused ? "Since Paint focus" : "Timestamp hidden while away";
+  }
+}
+
 function setPill(status) {
   statusNodes.pill.className = "pill";
 
@@ -228,6 +395,7 @@ function renderStatus(status) {
     statusNodes.message.textContent = "";
   }
   setPill(status);
+  updatePreview();
 }
 
 function useCurrentFileName() {
@@ -240,6 +408,7 @@ function useCurrentFileName() {
 
   fields.rpcName.value = documentTitle;
   statusNodes.message.textContent = "RPC name copied from the current file.";
+  updatePreview();
 }
 
 function renderSharedScreenshot(url) {
@@ -357,8 +526,11 @@ useCurrentFileButton.addEventListener("click", useCurrentFileName);
 fields.timestampMode.addEventListener("change", updateCustomTimestampVisibility);
 fields.applyScreenshotLut.addEventListener("change", updateScreenshotLutVisibility);
 fields.autoCaptureScreenshot.addEventListener("change", updateAutoCaptureVisibility);
+form.addEventListener("input", updatePreview);
+form.addEventListener("change", updatePreview);
 
 refreshStatus();
 updateScreenshotLutVisibility();
 updateAutoCaptureVisibility();
+updatePreview();
 setInterval(refreshStatus, 3000);

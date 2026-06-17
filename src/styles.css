@@ -170,6 +170,101 @@ label {
   margin-bottom: 14px;
 }
 
+.preview-tool {
+  border: 1px solid #d9ddd5;
+  border-radius: 7px;
+  margin-top: 14px;
+  padding: 12px;
+  background: #f7f8f6;
+}
+
+.preview-heading {
+  margin-bottom: 10px;
+}
+
+.preview-status {
+  color: #69717d;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.discord-preview {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 24px;
+  gap: 10px;
+  align-items: end;
+  min-height: 64px;
+}
+
+.preview-large-image,
+.preview-small-image {
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: #ffffff;
+  background: #5865f2;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.preview-large-image {
+  width: 64px;
+  height: 64px;
+  font-size: 1.05rem;
+}
+
+.preview-small-image {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #f7f8f6;
+  margin-left: -30px;
+  font-size: 0.68rem;
+}
+
+.preview-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.preview-copy strong,
+.preview-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-copy strong {
+  color: #1f252e;
+  font-size: 0.95rem;
+}
+
+.preview-copy span {
+  color: #59616c;
+  font-size: 0.84rem;
+}
+
+.preview-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.preview-button {
+  min-width: 0;
+  border-radius: 5px;
+  padding: 7px 8px;
+  overflow: hidden;
+  color: #ffffff;
+  background: #5865f2;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .core-grid,
 .details-grid {
   display: grid;
@@ -308,7 +403,8 @@ button:disabled {
   .status-strip,
   .core-grid,
   .details-grid,
-  .inline-input {
+  .inline-input,
+  .preview-buttons {
     grid-template-columns: 1fr;
   }
 

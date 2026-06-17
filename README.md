@@ -33,9 +33,10 @@ then every 5 minutes while focus stays in Clip Studio Paint. Leaving Clip Studio
 auto-capture timers. Auto-capture is off by default.
 
 The app settings can customize the Rich Presence activity label, details text, state text, large and
-small image keys, image hover text, timestamp mode, party size, and up to two buttons. If **Show
-document name** is enabled, the state line uses the active Clip Studio Paint window title when
-available and falls back to the configured state text.
+small image keys, image hover text, timestamp mode, party size, and up to two buttons. The preview
+panel shows how the current settings will look in Discord. If **Show document name** is enabled, the
+state line uses the active Clip Studio Paint window title when available and falls back to the
+configured state text.
 The app can also register itself to start with Windows. Pressing the window close button hides the
 app in the system tray instead of exiting so Discord Rich Presence and auto-capture can keep running.
 Right-click the tray icon to open, hide, or exit the app. Use **Check for Updates** to compare the
@@ -65,3 +66,16 @@ project application, or enter any custom asset keys you upload.
 
 Use **Capture & Share** to screenshot the current Clip Studio Paint window, upload it, and attach a
 Discord activity button labeled **See what I'm working on**.
+
+## Releases
+
+The GitHub release workflow builds a Windows setup installer when a version tag is pushed:
+
+```powershell
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+The workflow can also be started manually from GitHub Actions with a tag name. Update
+`package.json`, `src-tauri/Cargo.toml`, and `src-tauri/tauri.conf.json` to the same version before
+tagging.

@@ -1,6 +1,6 @@
 [package]
 name = "clip-studio-presence"
-version = "0.1.0"
+version = "1.0.0"
 description = "Discord Rich Presence companion for Clip Studio Paint"
 authors = ["Hiroyko"]
 edition = "2021"
