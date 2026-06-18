@@ -1,144 +1,129 @@
+<div align="center">
+
 # Clip Studio Presence
 
-For now this app is entirely vibe-coded because of laziness. I might clean it up, improve the code,
-and maintain it more seriously later, but right now it is very much a "I wanted the tool, so I made
-the tool" project.
+**Discord Rich Presence for Clip Studio Paint — because your friends deserve to know you've been staring at the same lineart for 3 hours :3**
 
-Clip Studio Presence is a small Windows desktop app that publishes Discord Rich Presence while Clip
-Studio Paint is running.
+![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Release](https://img.shields.io/github/v/release/Neroil/clip_studio_paint_discord_RPC)
+![Downloads](https://img.shields.io/github/downloads/Neroil/clip_studio_paint_discord_RPC/total)
+
+</div>
+
+---
+
+> ⚠️ **Vibe-coded with love.** This started as a "I REALLY WANT DISCORD RICH PRESENCE FOR CLIP STUDIO" project. The code is... working. Mhhhyeah! I might clean it up and maintain it more seriously over time, but no promises teehee
+
+---
+
+## What is this?
+
+Clip Studio Presence is a small Windows desktop app that shows your Clip Studio Paint session on your Discord profile as a Rich Presence activity. It shows how long you've been drawing, and whether you're actually drawing or just procrastinating.
 
 ## Features
 
-- Discord Rich Presence for Clip Studio Paint.
-- Focus-aware status: shows when you are drawing and when you are away/procrastinating.
-- Smart activity timer:
-  - while focused, Discord shows actual drawing time only;
-  - while away, Discord shows how long you have been procrastinating since you last left Clip Studio.
-- Optional procrastination percentage in the Discord activity text.
-- Active document title support for the state line and RPC name.
-- Live in-app preview of the Discord activity.
-- Custom activity type, profile line, details, state, image keys, hover text, party size, and buttons.
-- Screenshot sharing button:
-  - captures the Clip Studio Paint window;
-  - optionally applies an OBS-style PNG LUT;
-  - uploads the image;
-  - updates the Discord button URL at runtime.
-- Optional auto screenshot sharing:
-  - default first capture after 30 seconds of Clip Studio focus;
-  - default repeat every 5 minutes while focus stays in Clip Studio;
-  - leaving Clip Studio resets the timers.
-- Windows tray behavior:
-  - pressing the window X hides the app instead of closing it;
-  - right-click the tray icon to open, hide, or exit.
-- Optional start with Windows setting.
-- Basic GitHub release update check.
-- Windows installer release workflow.
+### Core Rich Presence
+- Live Discord Rich Presence while Clip Studio Paint is open
+- **Focus-aware status** — shows *"Drawing"* when CSP is focused, *"Procrastinating"* when you've wandered off
+- **Smart timer** — drawing time only counts while you're actually in CSP; away timer tracks how long you've been gone since you last left
+- Optional **procrastination percentage** in the activity text (for the brave and the honest)
+- Live **in-app preview** of what your Discord activity looks like (super badly done)
+
+### Customization
+- Custom activity type, profile line, details, state, image keys, hover text, party size, and buttons
+- Bring your own Discord Application ID to customize the images shown to your FRIENDS
+
+### Screenshot Sharing
+- **Capture & Share** button — screenshots your CSP window and attaches a *"See what I'm working on"* button to your Discord activity
+- Uploads the picture on [Uguu~](https://uguu.se)
+- Optional OBS-style PNG LUT support (512×512 flattened PNG)
+- **Auto capture** mode. First shot after 30s of focus, then every 5 minutes while you stay in CSP
+
+### Quality of Life
+- Runs quietly in the **system tray**, closing the window hides it, doesn't quit it
+- Right-click tray icon to open, hide, or exit
+- Optional **start with Windows** setting
+- Built-in **update checker** against GitHub Releases (Haven't tested it yet)
+
+---
 
 ## Install
 
-Download the latest Windows setup installer from GitHub Releases and run it.
+1. Go to the [**Releases**](../../releases/latest) page
+2. Download the latest `ClipStudioPresence-x.x.x-setup.exe`
+3. Run it and follow the installer
 
-If you already installed the app, running a newer installer for the same app should install over the
-existing copy. If the version number has not changed, Windows may not make it look like a normal
-upgrade, but the installer should still replace the app files.
+---
 
 ## Discord Setup
 
-The app ships with a bundled Discord application ID, so users do not need to create their own
-Discord Developer Application.
+The app ships with a bundled Discord application ID. Just install and go, no setup required.
 
-If you want full CustomRP-style control over the bold app name and asset library:
+If you want to use your own Discord application (for a custom bold name and your own asset library):
 
-1. Open the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Create or open an application.
-3. In **General Information**, copy the **Application ID**.
-4. Set the application **Name** to the title you want Discord to show in bold.
-5. Paste the ID into **Discord application ID** in the app settings.
-6. Upload Rich Presence image assets.
-7. Use those asset keys in the app.
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create or open an application
+3. Copy the **Application ID** from General Information
+4. Set the application **Name** to whatever you want Discord to show in bold
+5. Paste the ID into **Discord application ID** in the app settings
+6. Upload your Rich Presence image assets
+7. Use those asset keys in the app
 
-The default known asset keys are:
+The built-in asset keys are: `icon_1`, `icon_2`, `icon_3`
 
-```text
-icon_1
-icon_2
-icon_3
-```
-
-Discord may take a few minutes to make new art assets available in Rich Presence.
+---
 
 ## Screenshot Sharing
 
-Use **Capture & Share** to screenshot the current Clip Studio Paint window and attach a Discord
-activity button labeled **See what I'm working on**.
+Hit **Capture & Share** to screenshot the current CSP window and add a clickable button to your Discord activity.
 
-Discord only allows two Rich Presence buttons. When a shared screenshot URL exists, the screenshot
-button uses the first slot and the app fills any remaining slot with your custom buttons.
+Discord only allows 2 Rich Presence buttons sooo when a screenshot URL is active, it takes slot 1, and your custom buttons fill any remaining slot.
 
-The screenshot feature can apply an OBS-style PNG LUT before upload. The LUT must be a 512x512
-OBS-style flattened PNG LUT.
+Optionally apply an OBS-style PNG LUT (must be a 512×512 flattened PNG) before the image is uploaded.
 
-## Auto Capture
-
-Auto capture is off by default.
-
-When enabled, the defaults are:
-
-- first automatic capture after 30 seconds of continuous Clip Studio focus;
-- repeat capture every 5 minutes after that;
-- leaving Clip Studio resets the timers, so the next focused session waits 30 seconds again.
-
-Both timings are editable in the app.
-
-## Tray And Startup
-
-The app is meant to keep running quietly:
-
-- closing the window hides it to the system tray;
-- the tray menu can open, hide, or fully exit the app;
-- the startup setting can register the app to start with Windows.
-
-## Updates
-
-The app can check GitHub Releases and tell you when a newer release exists.
-
-Fully automatic in-app installation is not implemented yet. That can be added later with signed
-Tauri updater artifacts.
+---
 
 ## Development
 
-Install dependencies:
+**Prerequisites:** [Node.js](https://nodejs.org/) + [Rust](https://rustup.rs/)
 
 ```powershell
+# Install dependencies
 npm install
-```
 
-Run the app in development:
-
-```powershell
+# Run in development
 npm run tauri dev
-```
 
-Build the Windows NSIS installer locally:
-
-```powershell
+# Build Windows NSIS installer
 npm run tauri build -- --bundles nsis
 ```
 
-## Releases
+---
 
-The GitHub release workflow builds a Windows setup installer when a version tag is pushed:
+## Releasing
+
+The GitHub Actions workflow builds a Windows setup installer on tag push:
 
 ```powershell
 git tag v1.0.1
 git push origin v1.0.1
 ```
 
-The workflow can also be started manually from GitHub Actions with a tag name.
+You can also trigger it manually from the Actions tab.
 
-Before tagging a new version, update these files to the same version:
-
+Before tagging, make sure these four files are all on the same version:
 - `package.json`
 - `package-lock.json`
 - `src-tauri/Cargo.toml`
 - `src-tauri/tauri.conf.json`
+
+---
+
+## Built with
+
+- [Tauri](https://tauri.app/) — Rust + web frontend desktop framework
+- [discord-rich-presence](https://crates.io/crates/discord-rich-presence) — RPC crate
+- JavaScript / HTML / CSS frontend
+- ChatGPT's codex cause I had a free trial thank god
+
+---
